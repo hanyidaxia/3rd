@@ -23,15 +23,9 @@ class albert(nn.Module):
         self.out = nn.Linear(64, 4)
 
     def forward(self, inp, inp_mask):
-        # encoder
-
-        # print("********************************************" + "inp" +
-        #         str(type(inp))+ str(np.shape(inp)) +
-        #       "********************************************"  )
 
         output = self.bert(inp, inp_mask)[0]
         # print("1st output  " + str(np.shape(output)))
-        #
         # output = F.relu(self.conv1(output))
 
         # print("2nd output  " + str(np.shape(output)))
@@ -46,7 +40,6 @@ class albert(nn.Module):
         # print("5th output  " + str(np.shape(output)))
         output = self.out(output)
         # print("final output  " + str(np.shape(output)))
-        #
         # output = self.dense(output[:, 1:-1])
         # print("2nd output  " + str(np.shape(output)))
 

@@ -18,11 +18,9 @@ reader = jade_reader(args.batch_size)
 train_examples = reader.get_train_examples(data_dir)
 print(len(train_examples), type(train_examples), np.shape(train_examples))
 
-print(np.zeros((18, 5), dtype=float))
 
 
-
-# for i, example in enumerate(train_examples):
-#     inputs, labels = processor.convert_examples_to_tensor(example)
+for i, example in enumerate(train_examples):
+    inputs, labels = processor.convert_examples_to_tensor(example)
 
 # print(train_examples.text)

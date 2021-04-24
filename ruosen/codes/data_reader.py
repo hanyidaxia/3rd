@@ -1,11 +1,11 @@
 import sys
-
+import os
 sys.path.append('../')
 import torch
 import json
 import excute
 from excute import *
-
+import numpy as np
 """
 my codes requires all input file to be in json format
 """
@@ -70,18 +70,15 @@ class get_examples:
         self.label = label
 
 
-class DataReader(object):
-
-    @classmethod
-    def _read_task(cls, input_file):
-        print('Reading file:', input_file, file=excute.SHELL_OUT_FILE, flush=True)
-        data = all_def.load_json(input_file)
-        print('Read line:', len(data), file=excute.SHELL_OUT_FILE, flush=True)
-        print('Done', file=excute.SHELL_OUT_FILE, flush=True)
-        return data
+def read_task(input_file):
+    print('Reading file:', input_file, file=excute.SHELL_OUT_FILE, flush=True)
+    data = all_def.load_json(input_file)
+    print('Read line:', len(data), file=excute.SHELL_OUT_FILE, flush=True)
+    print('Done', file=excute.SHELL_OUT_FILE, flush=True)
+    return data
 
 
-class jade_reader(DataReader):
+class jade_reader:
     def __init__(self, batch_size=BATCH_SIZE):
         super().__init__()
         self.batch_size = batch_size
@@ -93,34 +90,31 @@ class jade_reader(DataReader):
         labels = []
         cnter = 1
         for review, lab in inputs.items():
+            seq.append(review)
+            labels.append(int(lab))
             cnter += 1
-            if cnter % 1000 == 0:
-                print("\rProcessed Examples: {}/{}".format(cnter, total_examples), end='\r', file=excute.SHELL_OUT_FILE,
-                      flush=True)
             if cnter % self.batch_size == 0:
-                seq.append(review)
-                labels.append(int(lab))
                 examples.append(get_examples(text=seq, label=labels))
+                cnter += 1
                 seq = []
                 labels = []
         if len(seq):
             examples.append(get_examples(text=seq, label=labels))
-        print("\rProcessed Examples: {}/{}".format(len(examples), total_examples), file=excute.SHELL_OUT_FILE,
+        print("\rProcessed Examples: {}/{}".format(len(examples), total_examples//self.batch_size), file=excute.SHELL_OUT_FILE,
               flush=True)
-
         return examples
 
     def get_train_examples(self, data_dir):
         return self._create_examples(
-            self._read_task(os.path.join(data_dir, 'train.json')))
+            read_task(os.path.join(data_dir, 'train.json')))
 
     def get_dev_examples(self, data_dir):
         return self._create_examples(
-            self._read_task(os.path.join(data_dir, 'dev.json')))
+            read_task(os.path.join(data_dir, 'dev.json')))
 
     def get_test_examples(self, data_dir):
         return self._create_examples(
-            self._read_task(os.path.join(data_dir, 'test.json')))
+            read_task(os.path.join(data_dir, 'test.json')))
 
 
 class jade_processor(object):
@@ -129,26 +123,23 @@ class jade_processor(object):
         self.max_seq_len = max_seq_len
 
     def convert_examples_to_tensor(self, examples):
-        examples.label = [int(i) for i in examples.label]
+        # examples.label = [i for i in examples.label]
         labels = torch.tensor(examples.label).unsqueeze(0)
-        inputs_ids = []
-        inputs_mask = []
-        token_type_ids = []
+        inputs_ids = torch.zeros(len(examples.text), self.max_seq_len)
+        inputs_mask = torch.zeros_like(inputs_ids)
+        token_type_ids = torch.zeros_like(inputs_ids)
 
-        for seq in examples.text:
-            print(seq)
+        for i, seq in enumerate(examples.text):
             inputs_raw = self.tokenizer(seq, max_length=self.max_seq_len, padding='max_length', truncation=True,
                                         add_special_tokens=True)
-            print(inputs_raw)
-            inputs_ids.append(torch.tensor(inputs_raw["input_ids"]).unsqueeze(0))
-            inputs_mask.append(torch.tensor(inputs_raw["attention_mask"]).unsqueeze(0))
-            token_type_ids.append(torch.tensor(inputs_raw["token_type_ids"]).unsqueeze(0))
+            inputs_ids[i, :] = (torch.tensor(inputs_raw["input_ids"]).unsqueeze(0))
+            inputs_mask[i, :] = (torch.tensor(inputs_raw["attention_mask"]).unsqueeze(0))
+            token_type_ids[i, :] = (torch.tensor(inputs_raw["token_type_ids"]).unsqueeze(0))
         inputs = [inputs_ids, inputs_mask, token_type_ids]
 
         if excute.USE_CUDA:
             inputs = [i.cuda() for i in inputs]
             labels = labels.cuda()
-
         return inputs, labels
 
     def convert_tensor_to_tokens(self, tensor):

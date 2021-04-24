@@ -6,11 +6,11 @@ sys.path.append('../')
 import argparse
 
 
-USE_CUDA = True # Change according to args
+USE_CUDA=True # Change according to args
 LR = 0.05 # Learning rate
 DROPOUT = 0.5
 MAX_SEQ_LEN = 256
-BATCH_SIZE = 2000
+BATCH_SIZE = 1000
 L2_NORM = 0.005
 SHELL_OUT_FILE=sys.stdout
 
