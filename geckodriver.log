@@ -889,6 +889,7 @@ console.warn: SearchSettings: "get: No settings file exists, new profile?" (new 
 1614395233598	Marionette	WARN	TLS certificate errors will be ignored for this session
 JavaScript error: , line 0: NS_ERROR_NOT_AVAILABLE
 1614524335576	Marionette	INFO	Stopped listening on port 54082
+<<<<<<< HEAD
 1617316249183	geckodriver	INFO	Listening on 127.0.0.1:55893
 1617316250183	mozrunner::runner	INFO	Running command: "/usr/bin/firefox" "--marionette" "-foreground" "-no-remote" "-profile" "/tmp/rust_mozprofilecMBGyp"
 [GFX1-]: More than 1 GPU from same vendor detected via PCI, cannot deduce device
@@ -1417,3 +1418,5 @@ IPDL protocol error: Handler returned error code!
 1617319599753	Marionette	INFO	Stopped listening on port 33579
 1617319600481	Marionette	INFO	Stopped listening on port 46803
 1617319601260	Marionette	INFO	Stopped listening on port 43351
+=======
+>>>>>>> origin/main
